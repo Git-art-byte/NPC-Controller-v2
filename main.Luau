@@ -50,6 +50,10 @@ local currentnpc
 -- Initialize clicknpc variable
 local clicknpc = true
 
+-- Store original positions for punishment system
+local punishedNPCs = {}
+local punishAuraEnabled = false
+
 local highlight = Instance.new("Highlight")
 highlight.Parent = lp
 highlight.FillTransparency = 1
@@ -182,18 +186,33 @@ new:maintoggle(save["4"].title, save["4"].des, function(a)
 	end
 end)
 
--- Button 5: Punish NPC
-new:mainbutton(save["5"].title, save["5"].des, function()
+-- Toggle 5: Punish NPC (Modified to be a toggle)
+local punishnpc
+punishnpc = new:maintoggle(save["5"].title, save["5"].des, function(a)
 	if currentnpc then
 		local part = currentnpc:FindFirstChild("HumanoidRootPart")
 		if part and partowner(part) then
-			currentnpc:PivotTo(CFrame.new(0, 1000, 0))
-			light(currentnpc, Color3.fromRGB(0, 255, 0))
+			if a then
+				-- Store original position
+				punishedNPCs[currentnpc] = currentnpc:GetPivot()
+				-- Send to space
+				currentnpc:PivotTo(CFrame.new(0, 1000, 0))
+				light(currentnpc, Color3.fromRGB(255, 165, 0))
+			else
+				-- Return to original position
+				if punishedNPCs[currentnpc] then
+					currentnpc:PivotTo(punishedNPCs[currentnpc])
+					punishedNPCs[currentnpc] = nil
+					light(currentnpc, Color3.fromRGB(0, 255, 0))
+				end
+			end
 		else
 			light(currentnpc, Color3.fromRGB(255, 0, 0))
+			punishnpc:swich(false)
 		end
 	else
 		print("No NPC selected!")
+		punishnpc:swich(false)
 	end
 end)
 
@@ -398,6 +417,94 @@ freezenpc = new:maintoggle(save["12"].title, save["12"].des, function(a)
 			else
 				light(currentnpc, Color3.fromRGB(255, 0, 0))
 			end
+		end
+	end
+end)
+
+-- NEW: Extra Toggle 13: Freeze Aura Any NPC
+local con3
+new:extratoggle(save["13"].title, function(a)
+	if a then
+		con3 = rs.Stepped:Connect(function()
+			local hrp1 = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+			if not hrp1 then return end
+
+			local nbp = ws:GetPartBoundsInRadius(hrp1.Position, 13)
+			for _, part in pairs(nbp) do
+				local model = part:FindFirstAncestorOfClass("Model")
+				if model and isnpc(model) then
+					local npc = model
+					local hrp = npc:FindFirstChild("HumanoidRootPart")
+					if hrp and partowner(hrp) and npc ~= lp.Character then
+						hrp.Anchored = true
+					end
+				end
+			end
+		end)
+		table.insert(_G.oldconnections, con3)
+	else
+		if con3 then
+			con3:Disconnect()
+			con3 = nil
+			-- Unfreeze all NPCs in radius
+			local hrp1 = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+			if hrp1 then
+				local nbp = ws:GetPartBoundsInRadius(hrp1.Position, 13)
+				for _, part in pairs(nbp) do
+					local model = part:FindFirstAncestorOfClass("Model")
+					if model and isnpc(model) then
+						local npc = model
+						local hrp = npc:FindFirstChild("HumanoidRootPart")
+						if hrp and partowner(hrp) and npc ~= lp.Character then
+							hrp.Anchored = false
+						end
+					end
+				end
+			end
+		end
+	end
+end)
+
+-- NEW: Extra Toggle 14: Punish Aura Any NPC
+local con4
+local punishAuraPositions = {}
+new:extratoggle(save["14"].title, function(a)
+	if a then
+		punishAuraEnabled = true
+		con4 = rs.Stepped:Connect(function()
+			local hrp1 = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+			if not hrp1 then return end
+
+			local nbp = ws:GetPartBoundsInRadius(hrp1.Position, 13)
+			for _, part in pairs(nbp) do
+				local model = part:FindFirstAncestorOfClass("Model")
+				if model and isnpc(model) then
+					local npc = model
+					local hrp = npc:FindFirstChild("HumanoidRootPart")
+					if hrp and partowner(hrp) and npc ~= lp.Character then
+						-- Store original position if not already stored
+						if not punishAuraPositions[npc] then
+							punishAuraPositions[npc] = npc:GetPivot()
+						end
+						-- Send to space
+						npc:PivotTo(CFrame.new(0, 1000, 0))
+					end
+				end
+			end
+		end)
+		table.insert(_G.oldconnections, con4)
+	else
+		punishAuraEnabled = false
+		if con4 then
+			con4:Disconnect()
+			con4 = nil
+			-- Return all punished NPCs to their original positions
+			for npc, originalPosition in pairs(punishAuraPositions) do
+				if npc and npc.Parent then
+					npc:PivotTo(originalPosition)
+				end
+			end
+			punishAuraPositions = {}
 		end
 	end
 end)
