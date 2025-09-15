@@ -19,10 +19,10 @@ end
 _G.patricknpcpanel = true
 _G.oldconnections = {}
 
-local github = "https://github.com/Git-art-byte/NPC-Controller-v2/tree/main/NPC%20Controller"
-local load = loadstring(game:HttpGet(github .. "/module.Luau"))()
+local base = "https://raw.githubusercontent.com/Git-art-byte/NPC-Controller-v2/main/NPC%20Controller"
 
-saved = loadstring(game:HttpGet(github .. "/table.luau"))()
+local load = loadstring(game:HttpGet(base .. "/module.Luau"))()
+saved = loadstring(game:HttpGet(base .. "/table.Luau"))()
 
 local save = saved or {}
 
