@@ -163,16 +163,64 @@ new:maintoggle(save["4"].title, save["4"].des, function(a)
 	end
 end)
 
-new:mainbutton(save["5"].title, save["5"].des, function()
-	if currentnpc then
-		local part = currentnpc:FindFirstChild("HumanoidRootPart")
-		if part and partowner(part) then
-			if lp and lp.Character then
-				local char = lp.Character
+-- Changed punish npc from button to toggle
+local punishcon, originalNPCPosition
+new:maintoggle(save["5"].title, save["5"].des, function(a)
+	if a then
+		if currentnpc then
+			local part = currentnpc:FindFirstChild("HumanoidRootPart")
+			if part and partowner(part) then
+				-- Store original position before punishing
+				originalNPCPosition = currentnpc:GetPivot()
+				
+				-- Teleport to space once and keep them there
 				currentnpc:PivotTo(CFrame.new(0, 1000, 0))
+				
+				-- Keep them in space (prevent them from falling back)
+				punishcon = rs.Stepped:Connect(function()
+					if currentnpc and currentnpc:FindFirstChild("HumanoidRootPart") then
+						local hrp = currentnpc:FindFirstChild("HumanoidRootPart")
+						if hrp and partowner(hrp) then
+							-- Only teleport back to space if they've moved from punishment position
+							if hrp.Position.Y < 999 then
+								currentnpc:PivotTo(CFrame.new(0, 1000, 0))
+							end
+						else
+							light(currentnpc, Color3.fromRGB(255, 0, 0))
+							if punishcon then
+								punishcon:Disconnect()
+								punishcon = nil
+							end
+						end
+					else
+						if punishcon then
+							punishcon:Disconnect()
+							punishcon = nil
+						end
+					end
+				end)
+				table.insert(_G.oldconnections, punishcon)
+				light(currentnpc, Color3.fromRGB(255, 165, 0))
+			else
+				light(currentnpc, Color3.fromRGB(255, 0, 0))
 			end
-		else
-			light(currentnpc, Color3.fromRGB(255, 0, 0))
+		end
+	else
+		-- Stop punishing and restore original position
+		if punishcon then
+			punishcon:Disconnect()
+			punishcon = nil
+		end
+		if currentnpc and originalNPCPosition then
+			local part = currentnpc:FindFirstChild("HumanoidRootPart")
+			if part and partowner(part) then
+				-- Restore NPC to original position
+				currentnpc:PivotTo(originalNPCPosition)
+				light(currentnpc, Color3.fromRGB(0, 255, 0))
+			else
+				light(currentnpc, Color3.fromRGB(255, 0, 0))
+			end
+			originalNPCPosition = nil
 		end
 	end
 end)
@@ -360,6 +408,96 @@ freezenpc = new:maintoggle(save["12"].title, save["12"].des, function(a)
 			else
 				light(currentnpc, Color3.fromRGB(255, 0, 0))
 			end
+		end
+	end
+end)
+
+-- Freeze aura any npc
+local con3
+new:extratoggle(save["13"].title, function(a)
+	if a then
+		con3 = rs.Stepped:Connect(function()
+			local hrp1 = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+			if not hrp1 then return end
+
+			local nbp = ws:GetPartBoundsInRadius(hrp1.Position, 13)
+			for _, part in pairs(nbp) do
+				local model = part:FindFirstAncestorOfClass("Model")
+				if model and isnpc(model) then
+					local npc = model
+					local hrp = npc:FindFirstChild("HumanoidRootPart")
+					if hrp and partowner(hrp) and not hrp.Anchored and npc ~= lp.Character then
+						hrp.Anchored = true
+					end
+				end
+			end
+		end)
+		table.insert(_G.oldconnections, con3)
+	else
+		if con3 then
+			con3:Disconnect()
+			con3 = nil
+		end
+	end
+end)
+
+-- Punish aura any npc
+local con4
+new:extratoggle(save["14"].title, function(a)
+	if a then
+		con4 = rs.Stepped:Connect(function()
+			local hrp1 = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+			if not hrp1 then return end
+
+			local nbp = ws:GetPartBoundsInRadius(hrp1.Position, 13)
+			for _, part in pairs(nbp) do
+				local model = part:FindFirstAncestorOfClass("Model")
+				if model and isnpc(model) then
+					local npc = model
+					local hrp = npc:FindFirstChild("HumanoidRootPart")
+					if hrp and partowner(hrp) and not hrp.Anchored and npc ~= lp.Character then
+						npc:PivotTo(CFrame.new(0, 1000, 0))
+					end
+				end
+			end
+		end)
+		table.insert(_G.oldconnections, con4)
+	else
+		if con4 then
+			con4:Disconnect()
+			con4 = nil
+		end
+	end
+end)
+
+-- Bring aura any npc
+local con5
+new:extratoggle(save["15"].title, function(a)
+	if a then
+		con5 = rs.Stepped:Connect(function()
+			local hrp1 = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+			if not hrp1 then return end
+
+			local nbp = ws:GetPartBoundsInRadius(hrp1.Position, 13)
+			for _, part in pairs(nbp) do
+				local model = part:FindFirstAncestorOfClass("Model")
+				if model and isnpc(model) then
+					local npc = model
+					local hrp = npc:FindFirstChild("HumanoidRootPart")
+					if hrp and partowner(hrp) and not hrp.Anchored and npc ~= lp.Character then
+						if lp and lp.Character then
+							local char = lp.Character
+							npc:PivotTo(char:GetPivot())
+						end
+					end
+				end
+			end
+		end)
+		table.insert(_G.oldconnections, con5)
+	else
+		if con5 then
+			con5:Disconnect()
+			con5 = nil
 		end
 	end
 end)
