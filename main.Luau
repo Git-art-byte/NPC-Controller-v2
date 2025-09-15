@@ -22,7 +22,7 @@ _G.oldconnections = {}
 local github = "https://github.com/Git-art-byte/NPC-Controller-v2/tree/main"
 local load = loadstring(game:HttpGet(github .. "/module.Luau"))()
 
-saved = loadstring(game:HttpGet(github .. "/table.luau"))()
+saved = loadstring(game:HttpGet(github .. "/table.Luau"))()
 
 local save = saved or {}
 
