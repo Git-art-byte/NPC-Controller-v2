@@ -19,7 +19,7 @@ end
 _G.patricknpcpanel = true
 _G.oldconnections = {}
 
-local github = "https://raw.githubusercontent.com/Git-art-byte/fe-source/refs/heads/main/NPC"
+local github = "https://github.com/Git-art-byte/NPC-Controller-v2/tree/main"
 local load = loadstring(game:HttpGet(github .. "/module.Luau"))()
 
 saved = loadstring(game:HttpGet(github .. "/table.luau"))()
@@ -47,6 +47,9 @@ local slow = TweenInfo.new(.8)
 local rad = 150
 local currentnpc
 
+-- Initialize clicknpc variable
+local clicknpc = true
+
 local highlight = Instance.new("Highlight")
 highlight.Parent = lp
 highlight.FillTransparency = 1
@@ -56,9 +59,9 @@ local light = function(adornee, color)
 	task.spawn(function()
 		highlight.Adornee = adornee
 		highlight.OutlineColor = color
-		tweenservice:Create(highlight, medium, {OutlineTransparency  = 0}):Play()
+		tweenservice:Create(highlight, medium, {OutlineTransparency = 0}):Play()
 		task.wait(.5)
-		tweenservice:Create(highlight, medium, {OutlineTransparency  = 1}):Play()
+		tweenservice:Create(highlight, medium, {OutlineTransparency = 1}):Play()
 	end)	
 end
 
@@ -78,6 +81,7 @@ function partowner(part)
 	return part.ReceiveAge == 0
 end
 
+-- Button 1: Kill NPC
 new:mainbutton(save["1"].title, save["1"].des, function()
 	if currentnpc then
 		local part = currentnpc:FindFirstChild("HumanoidRootPart")
@@ -86,13 +90,17 @@ new:mainbutton(save["1"].title, save["1"].des, function()
 			if hum then
 				hum:ChangeState(save["1"].val)
 				print("NPC killed via button!")
+				light(currentnpc, Color3.fromRGB(0, 255, 0))
 			end
 		else
 			light(currentnpc, Color3.fromRGB(255, 0, 0))
 		end
+	else
+		print("No NPC selected!")
 	end
 end)
 
+-- Button 2: Bring NPC
 new:mainbutton(save["2"].title, save["2"].des, function()
 	if currentnpc then
 		local part = currentnpc:FindFirstChild("HumanoidRootPart")
@@ -100,13 +108,17 @@ new:mainbutton(save["2"].title, save["2"].des, function()
 			if lp and lp.Character then
 				local char = lp.Character
 				currentnpc:PivotTo(char:GetPivot())
+				light(currentnpc, Color3.fromRGB(0, 255, 0))
 			end
 		else
 			light(currentnpc, Color3.fromRGB(255, 0, 0))
 		end
+	else
+		print("No NPC selected!")
 	end
 end)
 
+-- Button 3: Goto NPC
 new:mainbutton(save["3"].title, save["3"].des, function()
 	if currentnpc then
 		local part = currentnpc:FindFirstChild("HumanoidRootPart")
@@ -114,13 +126,17 @@ new:mainbutton(save["3"].title, save["3"].des, function()
 			if lp and lp.Character then
 				local char = lp.Character
 				char:PivotTo(currentnpc:GetPivot())
+				light(currentnpc, Color3.fromRGB(0, 255, 255))
 			end
 		else
 			light(currentnpc, Color3.fromRGB(255, 0, 0))
 		end
+	else
+		print("No NPC selected!")
 	end
 end)
 
+-- Toggle 4: Control NPC
 local chr, cons
 new:maintoggle(save["4"].title, save["4"].des, function(a)
 	if a then
@@ -145,15 +161,18 @@ new:maintoggle(save["4"].title, save["4"].des, function(a)
 						end
 					end)
 					table.insert(_G.oldconnections, cons)
+					light(currentnpc, Color3.fromRGB(0, 255, 0))
 				end
 			else
 				light(currentnpc, Color3.fromRGB(255, 0, 0))
 			end
+		else
+			print("No NPC selected!")
 		end
 	else
 		if chr then
 			lp.Character = chr
-			ws.CurrentCamera.CameraSubject = chr.Humanoid
+			ws.CurrentCamera.CameraSubject = chr:FindFirstChildOfClass("Humanoid")
 			chr = nil
 			if cons then
 				cons:Disconnect()
@@ -163,20 +182,22 @@ new:maintoggle(save["4"].title, save["4"].des, function(a)
 	end
 end)
 
+-- Button 5: Punish NPC
 new:mainbutton(save["5"].title, save["5"].des, function()
 	if currentnpc then
 		local part = currentnpc:FindFirstChild("HumanoidRootPart")
 		if part and partowner(part) then
-			if lp and lp.Character then
-				local char = lp.Character
-				currentnpc:PivotTo(CFrame.new(0, 1000, 0))
-			end
+			currentnpc:PivotTo(CFrame.new(0, 1000, 0))
+			light(currentnpc, Color3.fromRGB(0, 255, 0))
 		else
 			light(currentnpc, Color3.fromRGB(255, 0, 0))
 		end
+	else
+		print("No NPC selected!")
 	end
 end)
 
+-- Button 6: NPC Sit State
 new:mainbutton(save["6"].title, save["6"].des, function()
 	if currentnpc then
 		local part = currentnpc:FindFirstChild("HumanoidRootPart")
@@ -184,13 +205,17 @@ new:mainbutton(save["6"].title, save["6"].des, function()
 			local hum = currentnpc:FindFirstChildOfClass("Humanoid")
 			if hum then
 				hum.Sit = not hum.Sit
+				light(currentnpc, Color3.fromRGB(0, 255, 0))
 			end
 		else
 			light(currentnpc, Color3.fromRGB(255, 0, 0))
 		end
+	else
+		print("No NPC selected!")
 	end
 end)
 
+-- Button 7: NPC Jump State
 new:mainbutton(save["7"].title, save["7"].des, function()
 	if currentnpc then
 		local part = currentnpc:FindFirstChild("HumanoidRootPart")
@@ -198,44 +223,53 @@ new:mainbutton(save["7"].title, save["7"].des, function()
 			local hum = currentnpc:FindFirstChildOfClass("Humanoid")
 			if hum then
 				hum:ChangeState(save["7"].val)
+				light(currentnpc, Color3.fromRGB(0, 255, 0))
 			end
 		else
 			light(currentnpc, Color3.fromRGB(255, 0, 0))
 		end
+	else
+		print("No NPC selected!")
 	end
 end)
 
+-- Toggle 8: Following NPC
 local con, follownpc
 follownpc = new:maintoggle(save["8"].title, save["8"].des, function(a)
 	if a then
-		con = rs.RenderStepped:Connect(function()
-			if currentnpc then
-				local part = currentnpc:FindFirstChild("HumanoidRootPart")
-				if part and partowner(part) then
-					local hum = currentnpc:FindFirstChildOfClass("Humanoid")
-					if hum then
-						local hrp=lp.Character:FindFirstChild("HumanoidRootPart")
-						if hrp then
-							hum:MoveTo(hrp.Position + Vector3.new(-4,0,0))
+		if currentnpc then
+			con = rs.RenderStepped:Connect(function()
+				if currentnpc then
+					local part = currentnpc:FindFirstChild("HumanoidRootPart")
+					if part and partowner(part) then
+						local hum = currentnpc:FindFirstChildOfClass("Humanoid")
+						if hum then
+							local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+							if hrp then
+								hum:MoveTo(hrp.Position + Vector3.new(-4,0,0))
+							end
+						end
+					else
+						light(currentnpc, Color3.fromRGB(255, 0, 0))
+						if con then
+							follownpc:swich(false)
+							con:Disconnect()
+							con = nil
 						end
 					end
 				else
-					light(currentnpc, Color3.fromRGB(255, 0, 0))
 					if con then
 						follownpc:swich(false)
 						con:Disconnect()
 						con = nil
 					end
 				end
-			else
-				if con then
-					follownpc:swich(false)
-					con:Disconnect()
-					con = nil
-				end
-			end
-		end)
-		table.insert(_G.oldconnections, con)
+			end)
+			table.insert(_G.oldconnections, con)
+			light(currentnpc, Color3.fromRGB(0, 255, 0))
+		else
+			print("No NPC selected!")
+		end
 	else
 		if con then
 			con:Disconnect()
@@ -244,6 +278,7 @@ follownpc = new:maintoggle(save["8"].title, save["8"].des, function(a)
 	end
 end)
 
+-- Extra Toggle 9: Kill Aura Any NPC
 local con1
 new:extratoggle(save["9"].title, function(a)
 	if a then
@@ -275,6 +310,7 @@ new:extratoggle(save["9"].title, function(a)
 	end
 end)
 
+-- Extra Toggle 10: Jump Aura Any NPC
 local con2
 new:extratoggle(save["10"].title, function(a)
 	if a then
@@ -306,7 +342,7 @@ new:extratoggle(save["10"].title, function(a)
 	end
 end)
 
--- View NPC Toggle
+-- Toggle 11: View NPC
 local originalCameraSubject, viewnpc
 viewnpc = new:maintoggle(save["11"].title, save["11"].des, function(a)
 	if a then
@@ -321,6 +357,7 @@ viewnpc = new:maintoggle(save["11"].title, save["11"].des, function(a)
 				viewnpc:swich(false)
 			end
 		else
+			print("No NPC selected!")
 			viewnpc:swich(false)
 		end
 	else
@@ -335,7 +372,7 @@ viewnpc = new:maintoggle(save["11"].title, save["11"].des, function(a)
 	end
 end)
 
--- Freeze NPC Toggle
+-- Toggle 12: Freeze NPC
 local freezenpc
 freezenpc = new:maintoggle(save["12"].title, save["12"].des, function(a)
 	if a then
@@ -349,6 +386,7 @@ freezenpc = new:maintoggle(save["12"].title, save["12"].des, function(a)
 				freezenpc:swich(false)
 			end
 		else
+			print("No NPC selected!")
 			freezenpc:swich(false)
 		end
 	else
@@ -367,20 +405,27 @@ end)
 -- Mouse click to select NPC
 local mouseConnection = mouse.Button1Down:Connect(function()
 	if clicknpc and mouse.Target and mouse.Target.Parent:FindFirstChild("HumanoidRootPart") then
-		if mouse.Target.Parent:FindFirstChild("HumanoidRootPart").Anchored == false then
-			if not plrs:GetPlayerFromCharacter(mouse.Target.Parent) then
-				if partowner(mouse.Target.Parent:FindFirstChild("HumanoidRootPart")) then
-					currentnpc = mouse.Target.Parent
+		local targetModel = mouse.Target.Parent
+		local hrp = targetModel:FindFirstChild("HumanoidRootPart")
+		
+		if hrp and not hrp.Anchored then
+			if not plrs:GetPlayerFromCharacter(targetModel) then
+				if partowner(hrp) then
+					currentnpc = targetModel
 					light(currentnpc, Color3.fromRGB(0, 255, 0))
 					print("NPC selected:", currentnpc.Name)
 				else
-					light(mouse.Target.Parent, Color3.fromRGB(255, 0, 0))
+					light(targetModel, Color3.fromRGB(255, 0, 0))
 					print("NPC not network owned")
 				end
+			else
+				print("Target is a player, not an NPC")
 			end
 		else
-			light(mouse.Target.Parent, Color3.fromRGB(255, 0, 0))
-			print("NPC is anchored")
+			if hrp then
+				light(targetModel, Color3.fromRGB(255, 0, 0))
+				print("NPC is anchored")
+			end
 		end
 	end
 end)
