@@ -74,7 +74,7 @@ G2L["7"]["BackgroundTransparency"] = 1;
 G2L["7"]["RichText"] = true;
 G2L["7"]["Size"] = UDim2.new(0.91475, 0, 1, 0);
 G2L["7"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["7"]["Text"] = [[<b>npc panel |  @AngeEmmanuel Youtube</b>]];
+G2L["7"]["Text"] = [[<b>AE NPC PANEL |  @Ange Emmanuel</b>]];
 G2L["7"]["Position"] = UDim2.new(0.07674, 0, 0, 0);
 
 
@@ -1008,7 +1008,7 @@ G2L["6f"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
 G2L["6f"]["BackgroundTransparency"] = 1;
 G2L["6f"]["Size"] = UDim2.new(0.61, 0, 0.115, 0);
 G2L["6f"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["6f"]["Text"] = [[Im_Ange Emmanuel NPC Panel]];
+G2L["6f"]["Text"] = [[AE NPC Panel]];
 G2L["6f"]["Name"] = [[title]];
 G2L["6f"]["Position"] = UDim2.new(0.195, 0, 0.59, 0);
 
