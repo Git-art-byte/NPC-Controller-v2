@@ -40,6 +40,17 @@ local plrs = game:GetService("Players")
 local lp = plrs.LocalPlayer
 local mouse = lp:GetMouse()
 
+local core
+if game:FindFirstChildOfClass("CoreGui") then
+	if gethui then
+		core = gethui()
+	else
+		core = game:GetService("CoreGui")
+	end
+else
+	core = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+end
+
 local fast = TweenInfo.new(.5, Enum.EasingStyle.Exponential)
 local medium = TweenInfo.new(.67)
 local slow = TweenInfo.new(.8)
@@ -83,6 +94,18 @@ end
 -- Add partowner function
 function partowner(part)
 	return part.ReceiveAge == 0
+end
+
+-- Chat notification function
+local function showChatNotification(text)
+	pcall(function()
+		game:GetService("StarterGui"):SetCore("ChatMakeSystemMessage", {
+			Text = text;
+			Color = Color3.fromRGB(255, 255, 0);
+			Font = Enum.Font.Gotham;
+			FontSize = Enum.FontSize.Size18;
+		})
+	end)
 end
 
 -- Button 1: Kill NPC
@@ -509,6 +532,225 @@ new:extratoggle(save["14"].title, function(a)
 	end
 end)
 
+-- Chat Commands
+local function onChatted(message)
+    local msg = message:lower()
+    
+    if msg == ":kill npc" or msg == ":killnpc" then
+        if currentnpc then
+            local part = currentnpc:FindFirstChild("HumanoidRootPart")
+            if part and partowner(part) then
+                local hum = currentnpc:FindFirstChildOfClass("Humanoid")
+                if hum then
+                    hum:ChangeState(save["1"].val)
+                    showChatNotification("NPC killed via chat command!")
+                    light(currentnpc, Color3.fromRGB(0, 255, 0))
+                end
+            else
+                light(currentnpc, Color3.fromRGB(255, 0, 0))
+                showChatNotification("NPC not network owned!")
+            end
+        else
+            showChatNotification("No NPC selected! Click on an NPC first.")
+        end
+        
+    elseif msg == ":bring npc" or msg == ":bringnpc" then
+        if currentnpc then
+            local part = currentnpc:FindFirstChild("HumanoidRootPart")
+            if part and partowner(part) then
+                if lp and lp.Character then
+                    local char = lp.Character
+                    currentnpc:PivotTo(char:GetPivot())
+                    light(currentnpc, Color3.fromRGB(0, 255, 0))
+                    showChatNotification("NPC brought to your position!")
+                end
+            else
+                light(currentnpc, Color3.fromRGB(255, 0, 0))
+                showChatNotification("NPC not network owned!")
+            end
+        else
+            showChatNotification("No NPC selected! Click on an NPC first.")
+        end
+        
+    elseif msg == ":goto npc" or msg == ":gotonpc" then
+        if currentnpc then
+            local part = currentnpc:FindFirstChild("HumanoidRootPart")
+            if part then
+                if lp and lp.Character then
+                    local char = lp.Character
+                    char:PivotTo(currentnpc:GetPivot())
+                    light(currentnpc, Color3.fromRGB(0, 255, 255))
+                    showChatNotification("Teleported to NPC!")
+                end
+            else
+                light(currentnpc, Color3.fromRGB(255, 0, 0))
+                showChatNotification("NPC has no HumanoidRootPart!")
+            end
+        else
+            showChatNotification("No NPC selected! Click on an NPC first.")
+        end
+        
+    elseif msg == ":sit npc" or msg == ":sitnpc" then
+        if currentnpc then
+            local part = currentnpc:FindFirstChild("HumanoidRootPart")
+            if part and partowner(part) then
+                local hum = currentnpc:FindFirstChildOfClass("Humanoid")
+                if hum then
+                    hum.Sit = not hum.Sit
+                    light(currentnpc, Color3.fromRGB(0, 255, 0))
+                    showChatNotification("NPC sit state toggled!")
+                end
+            else
+                light(currentnpc, Color3.fromRGB(255, 0, 0))
+                showChatNotification("NPC not network owned!")
+            end
+        else
+            showChatNotification("No NPC selected! Click on an NPC first.")
+        end
+        
+    elseif msg == ":jump npc" or msg == ":jumpnpc" then
+        if currentnpc then
+            local part = currentnpc:FindFirstChild("HumanoidRootPart")
+            if part and partowner(part) then
+                local hum = currentnpc:FindFirstChildOfClass("Humanoid")
+                if hum then
+                    hum:ChangeState(save["7"].val)
+                    light(currentnpc, Color3.fromRGB(0, 255, 0))
+                    showChatNotification("NPC jumped!")
+                end
+            else
+                light(currentnpc, Color3.fromRGB(255, 0, 0))
+                showChatNotification("NPC not network owned!")
+            end
+        else
+            showChatNotification("No NPC selected! Click on an NPC first.")
+        end
+        
+    elseif msg == ":punish npc" or msg == ":punishnpc" then
+        if currentnpc then
+            local part = currentnpc:FindFirstChild("HumanoidRootPart")
+            if part and partowner(part) then
+                if not punishedNPCs[currentnpc] then
+                    -- Store original position and send to space
+                    punishedNPCs[currentnpc] = currentnpc:GetPivot()
+                    currentnpc:PivotTo(CFrame.new(0, 1000, 0))
+                    light(currentnpc, Color3.fromRGB(255, 165, 0))
+                    showChatNotification("NPC punished!")
+                else
+                    -- Return to original position
+                    currentnpc:PivotTo(punishedNPCs[currentnpc])
+                    punishedNPCs[currentnpc] = nil
+                    light(currentnpc, Color3.fromRGB(0, 255, 0))
+                    showChatNotification("NPC returned from punishment!")
+                end
+            else
+                light(currentnpc, Color3.fromRGB(255, 0, 0))
+                showChatNotification("NPC not network owned!")
+            end
+        else
+            showChatNotification("No NPC selected! Click on an NPC first.")
+        end
+        
+    elseif msg == ":freeze npc" or msg == ":freezenpc" then
+        if currentnpc then
+            local part = currentnpc:FindFirstChild("HumanoidRootPart")
+            if part and partowner(part) then
+                part.Anchored = not part.Anchored
+                light(currentnpc, part.Anchored and Color3.fromRGB(135, 206, 235) or Color3.fromRGB(0, 255, 0))
+                showChatNotification("NPC " .. (part.Anchored and "frozen!" or "unfrozen!"))
+            else
+                light(currentnpc, Color3.fromRGB(255, 0, 0))
+                showChatNotification("NPC has no HumanoidRootPart!")
+            end
+        else
+            showChatNotification("No NPC selected! Click on an NPC first.")
+        end
+        
+    elseif msg == ":sit npc" or msg == ":sitnpc" then
+        if currentnpc then
+            local part = currentnpc:FindFirstChild("HumanoidRootPart")
+            if part and partowner(part) then
+                local hum = currentnpc:FindFirstChildOfClass("Humanoid")
+                if hum then
+                    hum.Sit = not hum.Sit
+                    light(currentnpc, Color3.fromRGB(0, 255, 0))
+                    showChatNotification("NPC sit state toggled!")
+                end
+            else
+                light(currentnpc, Color3.fromRGB(255, 0, 0))
+                showChatNotification("NPC not network owned!")
+            end
+        else
+            showChatNotification("No NPC selected! Click on an NPC first.")
+        end
+        
+    elseif msg == ":jump npc" or msg == ":jumpnpc" then
+        if currentnpc then
+            local part = currentnpc:FindFirstChild("HumanoidRootPart")
+            if part and partowner(part) then
+                local hum = currentnpc:FindFirstChildOfClass("Humanoid")
+                if hum then
+                    hum:ChangeState(save["7"].val)
+                    light(currentnpc, Color3.fromRGB(0, 255, 0))
+                    showChatNotification("NPC jumped!")
+                end
+            else
+                light(currentnpc, Color3.fromRGB(255, 0, 0))
+                showChatNotification("NPC not network owned!")
+            end
+        else
+            showChatNotification("No NPC selected! Click on an NPC first.")
+        end
+        
+    elseif msg == ":punish npc" or msg == ":punishnpc" then
+        if currentnpc then
+            local part = currentnpc:FindFirstChild("HumanoidRootPart")
+            if part and partowner(part) then
+                if not punishedNPCs[currentnpc] then
+                    -- Store original position and send to space
+                    punishedNPCs[currentnpc] = currentnpc:GetPivot()
+                    currentnpc:PivotTo(CFrame.new(0, 1000, 0))
+                    light(currentnpc, Color3.fromRGB(255, 165, 0))
+                    showChatNotification("NPC punished!")
+                else
+                    -- Return to original position
+                    currentnpc:PivotTo(punishedNPCs[currentnpc])
+                    punishedNPCs[currentnpc] = nil
+                    light(currentnpc, Color3.fromRGB(0, 255, 0))
+                    showChatNotification("NPC returned from punishment!")
+                end
+            else
+                light(currentnpc, Color3.fromRGB(255, 0, 0))
+                showChatNotification("NPC not network owned!")
+            end
+        else
+            showChatNotification("No NPC selected! Click on an NPC first.")
+        end
+        
+    elseif msg == ":freeze npc" or msg == ":freezenpc" then
+        if currentnpc then
+            local part = currentnpc:FindFirstChild("HumanoidRootPart")
+            if part and partowner(part) then
+                part.Anchored = not part.Anchored
+                light(currentnpc, part.Anchored and Color3.fromRGB(135, 206, 235) or Color3.fromRGB(0, 255, 0))
+                showChatNotification("NPC " .. (part.Anchored and "frozen!" or "unfrozen!"))
+            else
+                light(currentnpc, Color3.fromRGB(255, 0, 0))
+                showChatNotification("NPC not network owned!")
+            end
+        else
+            showChatNotification("No NPC selected! Click on an NPC first.")
+        end
+        
+    elseif msg == ":commands" or msg == ":cmds" then
+        showChatNotification("=== NPC Commands ===\n:kill npc - Kill selected NPC\n:bring npc - Bring NPC to you\n:goto npc - Go to NPC\n:sit npc - Make NPC sit/stand\n:jump npc - Make NPC jump\n:punish npc - Send NPC to space/bring back\n:freeze npc - Freeze/unfreeze NPC\n:commands - Show this list")
+    end
+end
+
+-- Connect chat command
+local chatConnection = lp.Chatted:Connect(onChatted)
+table.insert(_G.oldconnections, chatConnection)
+
 -- Mouse click to select NPC
 local mouseConnection = mouse.Button1Down:Connect(function()
 	if clicknpc and mouse.Target and mouse.Target.Parent:FindFirstChild("HumanoidRootPart") then
@@ -520,18 +762,18 @@ local mouseConnection = mouse.Button1Down:Connect(function()
 				if partowner(hrp) then
 					currentnpc = targetModel
 					light(currentnpc, Color3.fromRGB(0, 255, 0))
-					print("NPC selected:", currentnpc.Name)
+					showChatNotification("NPC selected: " .. currentnpc.Name)
 				else
 					light(targetModel, Color3.fromRGB(255, 0, 0))
-					print("NPC not network owned")
+					showChatNotification("NPC not network owned")
 				end
 			else
-				print("Target is a player, not an NPC")
+				showChatNotification("Target is a player, not an NPC")
 			end
 		else
 			if hrp then
 				light(targetModel, Color3.fromRGB(255, 0, 0))
-				print("NPC is anchored")
+				showChatNotification("NPC is anchored")
 			end
 		end
 	end
