@@ -1250,26 +1250,29 @@ local create = function()
 	end
 
 	function create:extratoggle(title :TextLabel, func)
-		local togglesample = extra_toggle:Clone()
-		local addition = {}
-		togglesample.Parent = extra_scrollingframe
-		togglesample.TextLabel.Text = title or "error"
+	local togglesample = extra_toggle:Clone()
+	local addition = {}
+	togglesample.Parent = extra_scrollingframe
+	togglesample.TextLabel.Text = title or "error"
 
-		local toggle = false
-		togglesample.Frame.ImageButton.MouseButton1Click:Connect(function()
-			toggle = not toggle
-			if func then
-				task.spawn(function()
-					tweenservice:Create(togglesample.toggle, TweenInfo.new(.2), {BackgroundColor3 = toggle and Color3.fromRGB(26, 255, 0) or Color3.fromRGB(188, 0, 0)}):Play()
-				end)
+	local toggle = false
+	togglesample.Frame.ImageButton.MouseButton1Click:Connect(function()
+		toggle = not toggle
+		if func then
+			task.spawn(function()
+				-- Change the ImageButton color (the circle)
+				tweenservice:Create(togglesample.Frame.ImageButton, TweenInfo.new(.2), {ImageColor3 = toggle and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 255, 255)}):Play()
+			end)
 
-				local _,err = pcall(func, toggle)
-				if err then
-					error(err)
-				end
+			local _,err = pcall(func, toggle)
+			if err then
+				error(err)
 			end
-		end)
-	end
+		end
+	end)
+
+	return addition
+end
 
 	return create
 end
